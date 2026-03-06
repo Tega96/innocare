@@ -1,5 +1,5 @@
 
-const Login - () => {
+const Login = () => {
     return (
         <div>
             Signup
