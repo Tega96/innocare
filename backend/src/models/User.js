@@ -148,6 +148,17 @@ class User {
       [userId]
     );
   }
+
+  /**
+   * Deactivate user
+   */
+  static async deactivateUser(userId) {
+    const result = await query(
+      'UPDATE users SET is_active = false, updated_at = NOW() WHERE id = $1 RETURNING id',
+      [userId]
+    );
+    return result.rows[0];
+  }
 }
 
 module.exports = User;

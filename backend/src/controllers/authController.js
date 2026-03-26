@@ -1,6 +1,8 @@
 // backend/src/controllers/authController.js
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { query } = require('../config/database');
+const crypto = require('crypto');
 const emailService = require('../services/emailService');
 const smsService = require('../services/smsService');
 
@@ -15,7 +17,7 @@ class AuthController {
    */
   async registerPatient(req, res) {
     try {
-      const { email, phone, password, firstName, lastName, dateOfBirth, ...patientData } = req.body;
+      const { email, phone, password, firstName, lastName, dateOfBirth, address, emergencyContactName, emergencyContactPhone } = req.body;
       
       // Check if user already exists
       const existingEmail = await User.findByEmail(email);
@@ -38,23 +40,23 @@ class AuthController {
       
       // Create patient profile
       const patientProfile = await query(
-        `INSERT INTO patients (user_id, first_name, last_name, date_of_birth, ...) 
-         VALUES ($1, $2, $3, $4, ...) 
+        `INSERT INTO patients (user_id, first_name, last_name, date_of_birth, address, emergency_contact_name, emergency_contact_phone) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) 
          RETURNING *`,
-        [user.id, firstName, lastName, dateOfBirth]
+        [user.id, firstName, lastName, dateOfBirth, address, emergencyContactName, emergencyContactPhone]
       );
       
       // Send verification email
-      await emailService.sendVerificationEmail(email, user.emailVerificationToken);
+      emailService.sendVerificationEmail(email, user.emailVerificationToken);
       
       // Send verification SMS
-      await smsService.sendVerificationCode(phone, user.phoneVerificationCode);
+      smsService.sendVerificationCode(phone, user.phoneVerificationCode);
       
       // Generate JWT token
       const token = jwt.sign(
         { userId: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
       );
       
       res.status(201).json({
@@ -65,12 +67,14 @@ class AuthController {
           email: user.email,
           phone: user.phone,
           role: user.role,
+          isEmailVerified: user.is_email_verified,
+          isPhoneVerified: user.is_phone_verified,
           profile: patientProfile.rows[0]
         }
       });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ error: 'Failed to register patient' });
+      res.status(500).json({ error: 'Failed to register patient: ' + error.message });
     }
   }
   
@@ -120,16 +124,16 @@ class AuthController {
       );
       
       // Send verification email
-      await emailService.sendVerificationEmail(email, user.emailVerificationToken);
+      emailService.sendVerificationEmail(email, user.emailVerificationToken).catch(console.error);
       
       // Send verification SMS
-      await smsService.sendVerificationCode(phone, user.phoneVerificationCode);
+      smsService.sendVerificationCode(phone, user.phoneVerificationCode).catch(console.error);
       
       // Generate JWT token
       const token = jwt.sign(
         { userId: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
       );
       
       res.status(201).json({
@@ -140,6 +144,8 @@ class AuthController {
           email: user.email,
           phone: user.phone,
           role: user.role,
+          isEmailVerified: user.is_email_verified,
+          isPhoneVerified: user.is_phone_verified,
           profile: doctorProfile.rows[0]
         }
       });
@@ -222,6 +228,50 @@ class AuthController {
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ error: 'Failed to login' });
+    }
+  }
+
+  /**
+   * Get user data
+   * GET /api/auth/.......
+   */
+  async getMe(req, res) {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({error: 'User not found'});
+      }
+
+      // Get profile
+      let profile = null;
+      if (user.role === 'patient') {
+        const profileResult = await query(
+          'SELECT * FROM patients WHERE user_id = $1', 
+          [user.id]
+        );
+        profile = profileResult.rows[0];
+      } else if (user.role === 'doctor') {
+        const profileResult = await query(
+          'SELECT * FROM doctors WHERE user_id = $1',
+          [user.id]
+        );
+        profile = profileResult.rows[0];
+      } 
+
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          isEmailVerified: user.is_email_verified,
+          isPhoneVerified: user.is_phone_verified,
+          profile
+        }
+      });
+    } catch (error) {
+      console.error('Get me error: ', error);
+      res.status(500).json({ error: 'Failed to get user data'});
     }
   }
   
