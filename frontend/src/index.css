@@ -5,6 +5,9 @@
     --font-display: "Montserrat", san-serief;
     --color-primary: #333333;
     --color-secondayr: #DFDFDF;
+    --color-maternity-pink: #FFB6C1;
+    --color-maternity-lavender: #E6E6FA;
+    --color-maternity-mint: #98FB98;
 }
 
 @layer base {
