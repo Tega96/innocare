@@ -1,23 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss'
 
-@theme {
-    --font-display: "Montserrat", san-serief;
-    --color-primary: #333333;
-    --color-secondayr: #DFDFDF;
-    --color-maternity-pink: #FFB6C1;
-    --color-maternity-lavender: #E6E6FA;
-    --color-maternity-mint: #98FB98;
+/* Base styles */
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  /* Scrollbar (no @apply here) */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f3f4f6; /* gray-100 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #9ca3af; /* gray-400 */
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* gray-500 */
+  }
 }
 
-@layer base {
-    html {
-        font-family: var(--font-display);
-        scroll-behavior: smooth;
-    }
+/* Components */
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium
+           hover:bg-blue-700 transition-colors duration-200
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2;
+  }
 
-    body{
-        background-color: #f5f5f5;
-        color: #0944dbd8;
-    }
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium
+           hover:bg-gray-300 transition-colors duration-200;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium
+           hover:bg-red-700 transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-md overflow-hidden
+           hover:shadow-lg transition-shadow duration-300;
+  }
+
+  .dashboard-stat-card {
+    @apply bg-white rounded-xl shadow-sm p-6 border border-gray-100;
+  }
 }

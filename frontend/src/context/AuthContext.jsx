@@ -123,4 +123,26 @@ export const AuthProvider = ({ children }) => {
       toast.success('Phone verified successfully!');
       return { success: true };
     } catch (error) {
-      toast.error('
+      toast.error('Phone verification failed');
+      return { success: false };
+    }
+  };
+
+  const value = {
+    user, 
+    loading,
+    token, 
+    login,
+    registerPatient,
+    registerDoctor,
+    logout,
+    verifyEmail,
+    verifyPhone
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
