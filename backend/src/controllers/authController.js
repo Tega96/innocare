@@ -41,7 +41,7 @@ class AuthController {
         `INSERT INTO patients (user_id, first_name, last_name, date_of_birth, ...) 
          VALUES ($1, $2, $3, $4, ...) 
          RETURNING *`,
-        [user.id, firstName, lastName, dateOfBirth, ...]
+        [user.id, firstName, lastName, dateOfBirth]
       );
       
       // Send verification email
@@ -173,5 +173,183 @@ class AuthController {
       if (!isValidPassword) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
+            
+      // Update last login
+      await User.updateLastLogin(user.id);
       
-      // Update last
+      // Get profile based on role
+      let profile = null;
+      if (user.role === 'patient') {
+        const profileResult = await query(
+          'SELECT * FROM patients WHERE user_id = $1',
+          [user.id]
+        );
+        profile = profileResult.rows[0];
+      } else if (user.role === 'doctor') {
+        const profileResult = await query(
+          'SELECT * FROM doctors WHERE user_id = $1',
+          [user.id]
+        );
+        profile = profileResult.rows[0];
+      }
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          userId: user.id, 
+          email: user.email, 
+          role: user.role,
+          isEmailVerified: user.is_email_verified,
+          isPhoneVerified: user.is_phone_verified
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+      );
+      
+      res.json({
+        message: 'Login successful',
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          isEmailVerified: user.is_email_verified,
+          isPhoneVerified: user.is_phone_verified,
+          profile
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Failed to login' });
+    }
+  }
+  
+  /**
+   * Verify email with token
+   * GET /api/auth/verify-email/:token
+   */
+  async verifyEmail(req, res) {
+    try {
+      const { token } = req.params;
+      
+      const user = await User.verifyEmail(token);
+      
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid or expired verification token' });
+      }
+      
+      res.json({
+        message: 'Email verified successfully. You can now login.',
+        email: user.email
+      });
+    } catch (error) {
+      console.error('Email verification error:', error);
+      res.status(500).json({ error: 'Failed to verify email' });
+    }
+  }
+  
+  /**
+   * Verify phone with code
+   * POST /api/auth/verify-phone
+   */
+  async verifyPhone(req, res) {
+    try {
+      const { userId, code } = req.body;
+      
+      const user = await User.verifyPhone(userId, code);
+      
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid verification code' });
+      }
+      
+      res.json({
+        message: 'Phone verified successfully',
+        phone: user.phone
+      });
+    } catch (error) {
+      console.error('Phone verification error:', error);
+      res.status(500).json({ error: 'Failed to verify phone' });
+    }
+  }
+  
+  /**
+   * Resend verification email
+   * POST /api/auth/resend-verification-email
+   */
+  async resendVerificationEmail(req, res) {
+    try {
+      const { email } = req.body;
+      
+      const user = await User.findByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      if (user.is_email_verified) {
+        return res.status(400).json({ error: 'Email already verified' });
+      }
+      
+      // Generate new token
+      const newToken = crypto.randomBytes(32).toString('hex');
+      await query(
+        'UPDATE users SET email_verification_token = $1 WHERE id = $2',
+        [newToken, user.id]
+      );
+      
+      await emailService.sendVerificationEmail(email, newToken);
+      
+      res.json({ message: 'Verification email sent successfully' });
+    } catch (error) {
+      console.error('Resend email error:', error);
+      res.status(500).json({ error: 'Failed to resend verification email' });
+    }
+  }
+  
+  /**
+   * Forgot password - send reset link
+   * POST /api/auth/forgot-password
+   */
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+      
+      const resetToken = await User.createPasswordResetToken(email);
+      
+      if (resetToken) {
+        await emailService.sendPasswordResetEmail(email, resetToken);
+      }
+      
+      // Always return success to prevent email enumeration
+      res.json({ 
+        message: 'If an account exists with that email, you will receive a password reset link.' 
+      });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({ error: 'Failed to process request' });
+    }
+  }
+  
+  /**
+   * Reset password with token
+   * POST /api/auth/reset-password
+   */
+  async resetPassword(req, res) {
+    try {
+      const { token, newPassword } = req.body;
+      
+      const user = await User.resetPassword(token, newPassword);
+      
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid or expired reset token' });
+      }
+      
+      res.json({ message: 'Password reset successfully. You can now login.' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ error: 'Failed to reset password' });
+    }
+  }
+}
+
+module.exports = new AuthController();
