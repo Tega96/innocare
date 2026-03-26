@@ -1,1 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss'
+
+@theme {
+    --font-display: "Montserrat", san-serief;
+    --color-primary: #333333;
+    --color-secondayr: #DFDFDF;
+}
+
+@layer base {
+    html {
+        font-family: var(--font-display);
+        scroll-behavior: smooth;
+    }
+
+    body{
+        background-color: #f5f5f5;
+        color: #0944dbd8;
+    }
+}

@@ -2,7 +2,9 @@
 const LandingPage = () => {
     return (
         <div>
-            Landing page
+            <header className="flex flex-row bg-primary">
+
+            </header>
         </div>
     )
 }
