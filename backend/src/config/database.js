@@ -1,4 +1,3 @@
-// backend/src/config/database.js
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
 
