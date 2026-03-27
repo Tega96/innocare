@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../services/api'
+import type { Appointment, HealthRecord, PatientProfile } from '../../types';
+import { formatCurrency, formatDate, getInitials } from '../../utils/helpers';
+
 import { 
   FaCalendarAlt, 
   FaUserMd, 
@@ -24,6 +28,7 @@ import {
   Legend
 } from 'chart.js';
 
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,7 +39,21 @@ ChartJS.register(
   Legend
 );
 
-const PatientDashboard = () => {
+interface DashboardStats {
+  upcomingAppointments: number;
+  totalAppointments: number;
+  prescriptions: number;
+  healthRecords: number;
+}
+
+interface HealthDataPoint {
+  recorded_at: string;
+  blood_pressure_systolic: number;
+  heart_rate: number;
+}
+
+
+const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
     upcomingAppointments: 0,
@@ -42,15 +61,15 @@ const PatientDashboard = () => {
     prescriptions: 0,
     healthRecords: 0
   });
-  const [recentAppointments, setRecentAppointments] = useState([]);
-  const [healthData, setHealthData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([]);
+  const [healthData, setHealthData] = useState<HealthDataPoint[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (): Promise<void> => {
     try {
       setLoading(true);
       
@@ -157,7 +176,7 @@ const PatientDashboard = () => {
       <div className="bg-linear-to-r from-primary-600 to-primary-700 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold">
-            Welcome back, {user?.profile?.first_name}!
+            Welcome back, {user?.profile?.firstName}!
           </h1>
           <p className="mt-2 text-primary-100">
             Track your pregnancy journey, manage appointments, and stay healthy
