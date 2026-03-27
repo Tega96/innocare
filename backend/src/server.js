@@ -1,4 +1,4 @@
-// backend/src/server.js
+// backend/src/server.js (Updated with all routes)
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 // Load environment variables
 dotenv.config();
@@ -15,15 +16,7 @@ const { pool } = require('./config/database');
 const { setupSocket } = require('./config/socket');
 
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const patientRoutes = require('./routes/patientRoutes');
-const doctorRoutes = require('./routes/doctorRoutes');
-const appointmentRoutes = require('./routes/appointmentRoutes');
-const healthRoutes = require('./routes/healthRoutes');
-const pharmacyRoutes = require('./routes/pharmacyRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const chatRoutes = require('./routes/chatRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+const routes = require('./routes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -39,6 +32,13 @@ const io = new Server(server, {
   }
 });
 
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -50,6 +50,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/api', limiter);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -58,20 +59,7 @@ app.use((req, res, next) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/patients', patientRoutes);
-app.use('/api/doctors', doctorRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/health', healthRoutes);
-app.use('/api/pharmacy', pharmacyRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/admin', adminRoutes);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
+app.use('/api', routes);
 
 // 404 handler
 app.use((req, res) => {
@@ -89,6 +77,7 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 API URL: http://localhost:${PORT}/api`);
 });
 
 // Graceful shutdown
