@@ -46,7 +46,7 @@ const Contact = () => {
     {
       icon: FaEnvelope,
       title: 'Email',
-      details: ['support@maternitycare.com', 'info@maternitycare.com'],
+      details: ['support@InnoCare.com', 'info@InnoCare.com'],
       color: 'bg-blue-100 text-blue-600'
     },
     {
@@ -202,7 +202,7 @@ const Contact = () => {
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="h-64 bg-gray-200">
               <iframe
-                title="MaternityCare Location"
+                title="InnoCare Location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.596022459644!2d3.416797!3d6.453058!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8b1c1c1c1c1c%3A0x1c1c1c1c1c1c1c1c!2sLagos%2C%20Nigeria!5e0!3m2!1sen!2sng!4v1640000000000!5m2!1sen!2sng"
                 width="100%"
                 height="100%"

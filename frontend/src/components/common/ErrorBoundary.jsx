@@ -192,10 +192,10 @@ Timestamp: ${new Date().toISOString()}
               <p className="text-sm text-gray-500">
                 Need help? Contact our support team at{' '}
                 <a
-                  href="mailto:support@maternitycare.com"
+                  href="mailto:support@InnoCare.com"
                   className="text-primary-600 hover:text-primary-700"
                 >
-                  support@maternitycare.com
+                  support@InnoCare.com
                 </a>
               </p>
               <button

@@ -112,7 +112,7 @@ const PatientRegister = () => {
             Create Patient Account
           </h2>
           <p className="mt-2 text-gray-600">
-            Join MaternityCare and start your pregnancy journey with expert care
+            Join InnoCare and start your pregnancy journey with expert care
           </p>
         </div>
 
@@ -419,7 +419,7 @@ const PatientRegister = () => {
               <FaBaby className="h-5 w-5 text-primary-600" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-primary-800">Why join MaternityCare?</h3>
+              <h3 className="text-sm font-medium text-primary-800">Why join InnoCare?</h3>
               <div className="mt-2 text-sm text-primary-700">
                 <ul className="list-disc list-inside space-y-1">
                   <li>Connect with experienced obstetricians and maternity specialists</li>

@@ -40,7 +40,7 @@ const Login = () => {
             </div>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome to MaternityCare
+            Welcome to InnoCare
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to your account
@@ -131,7 +131,7 @@ const Login = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">New to MaternityCare?</span>
+              <span className="px-2 bg-white text-gray-500">New to InnoCare?</span>
             </div>
           </div>
 

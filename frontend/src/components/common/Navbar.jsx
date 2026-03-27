@@ -180,7 +180,7 @@ const Navbar = () => {
                 <FaBaby className="h-6 w-6 text-primary-600" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
-                MaternityCare
+                InnoCare
               </span>
             </Link>
 

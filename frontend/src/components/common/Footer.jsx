@@ -44,16 +44,16 @@ const Footer = () => {
 
   const contactInfo = [
     { icon: FaPhone, text: '+234 123 456 7890', href: 'tel:+2341234567890' },
-    { icon: FaEnvelope, text: 'support@maternitycare.com', href: 'mailto:support@maternitycare.com' },
+    { icon: FaEnvelope, text: 'support@InnoCare.com', href: 'mailto:support@InnoCare.com' },
     { icon: FaMapMarkerAlt, text: '123 Health Street, Victoria Island, Lagos, Nigeria', href: null },
     { icon: FaClock, text: '24/7 Emergency Support Available', href: null },
   ];
 
   const socialLinks = [
-    { icon: FaFacebook, href: 'https://facebook.com/maternitycare', label: 'Facebook' },
-    { icon: FaTwitter, href: 'https://twitter.com/maternitycare', label: 'Twitter' },
-    { icon: FaInstagram, href: 'https://instagram.com/maternitycare', label: 'Instagram' },
-    { icon: FaLinkedin, href: 'https://linkedin.com/company/maternitycare', label: 'LinkedIn' },
+    { icon: FaFacebook, href: 'https://facebook.com/InnoCare', label: 'Facebook' },
+    { icon: FaTwitter, href: 'https://twitter.com/InnoCare', label: 'Twitter' },
+    { icon: FaInstagram, href: 'https://instagram.com/InnoCare', label: 'Instagram' },
+    { icon: FaLinkedin, href: 'https://linkedin.com/company/InnoCare', label: 'LinkedIn' },
   ];
 
   return (
@@ -77,7 +77,7 @@ const Footer = () => {
               <div className="bg-primary-600 p-1.5 rounded-lg">
                 <FaBaby className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">MaternityCare</span>
+              <span className="text-xl font-bold text-white">InnoCare</span>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               Empowering mothers with expert care, personalized support, and convenient access to quality maternal healthcare.
@@ -197,7 +197,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-gray-400 text-sm">
-            &copy; {currentYear} MaternityCare. All rights reserved.
+            &copy; {currentYear} InnoCare. All rights reserved.
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <Link to="/privacy" className="hover:text-primary-400 transition-colors">

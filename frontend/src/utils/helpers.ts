@@ -1,7 +1,6 @@
-// frontend/src/utils/helpers.js
 import { format } from 'date-fns';
 
-export const formatCurrency = (amount) => {
+export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
@@ -10,30 +9,30 @@ export const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-export const formatDate = (date, formatStr = 'MMM dd, yyyy') => {
+export const formatDate = (date: string | Date, formatStr: string = 'MMM dd, yyyy'): string => {
   if (!date) return 'N/A';
   return format(new Date(date), formatStr);
 };
 
-export const formatTime = (time) => {
+export const formatTime = (time: string): string => {
   if (!time) return 'N/A';
   return time.slice(0, 5);
 };
 
-export const formatDateTime = (date, time) => {
+export const formatDateTime = (date: string, time: string): string => {
   if (!date) return 'N/A';
   const dateStr = formatDate(date);
   const timeStr = formatTime(time);
   return `${dateStr} at ${timeStr}`;
 };
 
-export const getInitials = (firstName, lastName) => {
+export const getInitials = (firstName?: string, lastName?: string) => {
   if (!firstName && !lastName) return '?';
   return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
 };
 
-export const getStatusColor = (status) => {
-  const colors = {
+export const getStatusColor = (status: string): string => {
+  const colors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
     confirmed: 'bg-green-100 text-green-800',
     completed: 'bg-blue-100 text-blue-800',
@@ -48,8 +47,8 @@ export const getStatusColor = (status) => {
   return colors[status] || 'bg-gray-100 text-gray-800';
 };
 
-export const getStatusText = (status) => {
-  const texts = {
+export const getStatusText = (status: string): string => {
+  const texts: Record<string, string> = {
     pending: 'Pending',
     confirmed: 'Confirmed',
     completed: 'Completed',
@@ -64,7 +63,7 @@ export const getStatusText = (status) => {
   return texts[status] || status;
 };
 
-export const calculateAge = (birthDate) => {
+export const calculateAge = (birthDate: string) => {
   if (!birthDate) return null;
   const today = new Date();
   const birth = new Date(birthDate);
@@ -127,33 +126,32 @@ export const getSeverityOptions = () => {
   ];
 };
 
-export const validateEmail = (email) => {
+export const validateEmail = (email: string): boolean => {
   const re = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
   return re.test(email);
 };
 
-export const validatePhone = (phone) => {
+export const validatePhone = (phone: string): boolean => {
   const re = /^[0-9+\-\s()]+$/;
   return re.test(phone);
 };
 
-export const validatePassword = (password) => {
+export const validatePassword = (password: string): boolean => {
   return password && password.length >= 6;
 };
 
-export const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
+export const debounce = <T extends (...args: any[]) => any>(
+  func: T, 
+  wait: number
+): ((...args: Parameters<T>) => void) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
     clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+    timeout = setTimeout(() => func(...args), wait)
+  }
 };
 
-export const getErrorMessage = (error) => {
+export const getErrorMessage = (error: any): string => {
   if (error.response?.data?.error) {
     return error.response.data.error;
   }
@@ -163,7 +161,7 @@ export const getErrorMessage = (error) => {
   return 'An unexpected error occurred';
 };
 
-export const downloadFile = (blob, filename) => {
+export const downloadFile = (blob: Blob, filename: string): void => {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

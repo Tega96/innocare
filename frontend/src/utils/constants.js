@@ -1,5 +1,5 @@
 // frontend/src/utils/constants.js
-export const APP_NAME = 'MaternityCare';
+export const APP_NAME = 'InnoCare';
 export const APP_VERSION = '1.0.0';
 
 export const API_ENDPOINTS = {

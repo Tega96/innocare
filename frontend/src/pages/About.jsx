@@ -27,7 +27,7 @@ const About = () => {
   ];
 
   const milestones = [
-    { year: '2020', title: 'Founded', description: 'MaternityCare was established with a vision to transform maternal healthcare' },
+    { year: '2020', title: 'Founded', description: 'InnoCare was established with a vision to transform maternal healthcare' },
     { year: '2021', title: 'First 1000 Mothers', description: 'Reached our first 1000 mothers served across Nigeria' },
     { year: '2022', title: 'Expansion', Description: 'Expanded our network to 50+ specialized doctors' },
     { year: '2023', title: 'Innovation Award', description: 'Received recognition for innovation in telemedicine' },
@@ -39,7 +39,7 @@ const About = () => {
       {/* Hero Section */}
       <div className="bg-linear-to-r from-primary-600 to-primary-700 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About MaternityCare</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">About InnoCare</h1>
           <p className="text-xl text-primary-100 max-w-3xl mx-auto">
             Revolutionizing maternal healthcare through technology and compassion
           </p>
@@ -100,7 +100,7 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Journey</h2>
-            <p className="text-xl text-gray-600">Milestones that shaped MaternityCare</p>
+            <p className="text-xl text-gray-600">Milestones that shaped InnoCare</p>
           </div>
           
           <div className="relative">

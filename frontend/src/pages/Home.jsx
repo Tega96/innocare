@@ -68,7 +68,7 @@ const Home = () => {
     {
       name: 'Sarah Johnson',
       role: 'First-time Mother',
-      content: 'MaternityCare made my pregnancy journey so much easier. The doctors are professional and the video consultations are a lifesaver!',
+      content: 'InnoCare made my pregnancy journey so much easier. The doctors are professional and the video consultations are a lifesaver!',
       rating: 5,
       image: 'https://randomuser.me/api/portraits/women/1.jpg'
     },
@@ -97,7 +97,7 @@ const Home = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <FaBaby className="h-8 w-8 text-primary-200" />
-                <span className="text-primary-200 font-semibold">MaternityCare</span>
+                <span className="text-primary-200 font-semibold">InnoCare</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Expert Care for Your Pregnancy Journey
@@ -192,7 +192,7 @@ const Home = () => {
               How It Works
             </h2>
             <p className="text-xl text-gray-600">
-              Simple steps to get started with MaternityCare
+              Simple steps to get started with InnoCare
             </p>
           </div>
           
@@ -267,7 +267,7 @@ const Home = () => {
             Ready to Start Your Pregnancy Journey?
           </h2>
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of mothers who trust MaternityCare for their pregnancy care
+            Join thousands of mothers who trust InnoCare for their pregnancy care
           </p>
           <Link
             to="/register/patient"

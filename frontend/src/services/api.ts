@@ -42,7 +42,7 @@ api.interceptors.response.use(
 );
 
 // Helper methods
-export const setAuthToken = (token) => {
+export const setAuthToken = (token: string | null): void => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('token', token);
@@ -52,7 +52,7 @@ export const setAuthToken = (token) => {
   }
 };
 
-export const clearAuthToken = () => {
+export const clearAuthToken = (): void => {
   delete api.defaults.headers.common['Authorization'];
   localStorage.removeItem('token');
 };
