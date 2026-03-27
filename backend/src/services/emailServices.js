@@ -36,10 +36,10 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to MaternityCare!</h1>
+              <h1>Welcome to InnoCare!</h1>
             </div>
             <div class="content">
-              <p>Thank you for registering with MaternityCare. Please verify your email address to get started.</p>
+              <p>Thank you for registering with InnoCare. Please verify your email address to get started.</p>
               <p>Click the button below to verify your email:</p>
               <div style="text-align: center;">
                 <a href="${verificationUrl}" class="button">Verify Email Address</a>
@@ -50,7 +50,7 @@ class EmailService {
               <p>If you didn't create an account, you can safely ignore this email.</p>
             </div>
             <div class="footer">
-              <p>&copy; 2024 MaternityCare. All rights reserved.</p>
+              <p>&copy; 2024 InnoCare. All rights reserved.</p>
             </div>
           </div>
         </body>

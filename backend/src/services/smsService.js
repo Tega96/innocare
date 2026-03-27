@@ -19,7 +19,7 @@ class SMSService {
 
     try {
       const message = await this.client.messages.create({
-        body: `Welcome to MaternityCare! Your verification code is: ${code}. This code will expire in 10 minutes.`,
+        body: `Welcome to InnoCare! Your verification code is: ${code}. This code will expire in 10 minutes.`,
         from: process.env.TWILIO_PHONE_NUMBER,
         to: phoneNumber
       });

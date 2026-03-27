@@ -45,7 +45,7 @@ class PaymentService {
         customer: {
           email,
           phone,
-          name: customerName || 'MaternityCare Patient'
+          name: customerName || 'InnoCare Patient'
         },
         metadata: {
           paymentType,
