@@ -11,7 +11,7 @@ import {
   FaCreditCard,
   FaHistory,
   FaArrowRight,
-  FaBank,
+  // FaBank,
   FaInfoCircle,
   FaCheckCircle,
   FaTimesCircle,
