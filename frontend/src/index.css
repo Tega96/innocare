@@ -58,3 +58,162 @@
     @apply bg-white rounded-xl shadow-sm p-6 border border-gray-100;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   THEME VARIABLES (REPLACES CONFIG COLORS)
+========================= */
+@layer base {
+  :root {
+    /* Primary */
+    --color-primary-50: #f0f9ff;
+    --color-primary-100: #e0f2fe;
+    --color-primary-200: #bae6fd;
+    --color-primary-300: #7dd3fc;
+    --color-primary-400: #38bdf8;
+    --color-primary-500: #0ea5e9;
+    --color-primary-600: #0284c7;
+    --color-primary-700: #0369a1;
+    --color-primary-800: #075985;
+    --color-primary-900: #0c4a6e;
+
+    /* Secondary */
+    --color-secondary-500: #d946ef;
+
+    /* Maternity */
+    --color-maternity-pink: #FFB6C1;
+    --color-maternity-lavender: #E6E6FA;
+    --color-maternity-mint: #98FB98;
+    --color-maternity-peach: #FFDAB9;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+/* =========================
+   CUSTOM UTILITIES
+========================= */
+@layer utilities {
+  .bg-primary {
+    background-color: var(--color-primary-600);
+  }
+
+  .bg-primary-hover:hover {
+    background-color: var(--color-primary-700);
+  }
+
+  .text-primary {
+    color: var(--color-primary-600);
+  }
+
+  .bg-secondary {
+    background-color: var(--color-secondary-500);
+  }
+
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0,0,0,0.07),
+                0 10px 20px -2px rgba(0,0,0,0.04);
+  }
+
+  .shadow-card {
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                0 2px 4px -1px rgba(0,0,0,0.06);
+  }
+
+  /* Custom spacing */
+  .p-18 { padding: 4.5rem; }
+  .w-88 { width: 22rem; }
+  .w-128 { width: 32rem; }
+}
+
+/* =========================
+   COMPONENTS
+========================= */
+@layer components {
+  .btn-primary {
+    @apply text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    background-color: var(--color-primary-600);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-700);
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg
+           focus:outline-none focus:ring-2 focus:ring-blue-500
+           transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-xl overflow-hidden transition-shadow duration-300;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+@layer utilities {
+  @keyframes slideUp {
+    0% { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes slideDown {
+    0% { transform: translateY(-10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+}

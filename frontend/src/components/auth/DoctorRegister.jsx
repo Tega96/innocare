@@ -1,429 +1,565 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/components/auth/DoctorRegister.jsx
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { 
-  FaCalendarAlt, 
-  FaUsers, 
-  FaMoneyBillWave, 
-  FaHeartbeat,
-  FaVideo,
-  FaComments,
-  FaChartLine,
-  FaClock,
-  FaCheckCircle,
-  FaSpinner
+  FaUserMd, FaEnvelope, FaLock, FaPhone, FaStethoscope, 
+  FaMoneyBillWave, FaHospital, FaGraduationCap, FaClock, 
+  FaCalendarAlt, FaMapMarkerAlt, FaArrowLeft, FaPlus, FaTimes 
 } from 'react-icons/fa';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import toast from 'react-hot-toast';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-const DoctorDashboard = () => {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({
-    todayAppointments: 0,
-    totalPatients: 0,
-    totalEarnings: 0,
-    pendingEarnings: 0
+const DoctorRegister = () => {
+  const navigate = useNavigate();
+  const { registerDoctor } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    specialization: '',
+    consultationFee: '',
+    hospitalName: '',
+    hospitalAddress: '',
+    yearsOfExperience: '',
+    qualifications: '',
+    availableDays: [],
+    availableTimeStart: '09:00',
+    availableTimeEnd: '17:00',
+    maxAppointmentsPerDay: '10'
   });
-  const [todayAppointments, setTodayAppointments] = useState([]);
-  const [recentPatients, setRecentPatients] = useState([]);
-  const [earningsData, setEarningsData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  
+  const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch today's appointments
-      const today = new Date().toISOString().split('T')[0];
-      const appointmentsRes = await axios.get(`/api/appointments/doctor?date=${today}`);
-      const appointments = appointmentsRes.data.appointments || [];
-      
-      const confirmedAppointments = appointments.filter(apt => apt.status === 'confirmed');
-      const completedAppointments = appointments.filter(apt => apt.status === 'completed');
-      
-      setTodayAppointments(appointments.slice(0, 10));
-      
-      // Fetch total patients
-      const patientsRes = await axios.get('/api/doctors/patients');
-      const patients = patientsRes.data.patients || [];
-      
-      setRecentPatients(patients.slice(0, 5));
-      
-      // Fetch earnings
-      const earningsRes = await axios.get('/api/doctors/earnings');
-      const earnings = earningsRes.data;
-      
-      setStats({
-        todayAppointments: confirmedAppointments.length,
-        totalPatients: patients.length,
-        totalEarnings: earnings.totalEarnings || 0,
-        pendingEarnings: earnings.pendingEarnings || 0
-      });
-      
-      // Prepare earnings chart data
-      if (earnings.weeklyData) {
-        setEarningsData({
-          labels: earnings.weeklyData.map(d => d.day),
-          datasets: [
-            {
-              label: 'Earnings (₦)',
-              data: earnings.weeklyData.map(d => d.amount),
-              borderColor: 'rgb(34, 197, 94)',
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              fill: true,
-              tension: 0.4
-            }
-          ]
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Required fields
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!formData.phone) newErrors.phone = 'Phone number is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
+    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.specialization) newErrors.specialization = 'Specialization is required';
+    if (!formData.consultationFee) newErrors.consultationFee = 'Consultation fee is required';
+    else if (isNaN(formData.consultationFee) || formData.consultationFee <= 0) newErrors.consultationFee = 'Valid consultation fee is required';
+    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital name is required';
+    if (formData.availableDays.length === 0) newErrors.availableDays = 'Select at least one available day';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const handlePhoneChange = (value) => {
+    setFormData(prev => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: '' }));
     }
   };
 
-  const statsCards = [
-    {
-      title: "Today's Appointments",
-      value: stats.todayAppointments,
-      icon: FaCalendarAlt,
-      color: 'bg-blue-500',
-      link: '/doctor/appointments'
-    },
-    {
-      title: 'Total Patients',
-      value: stats.totalPatients,
-      icon: FaUsers,
-      color: 'bg-green-500',
-      link: '/doctor/patients'
-    },
-    {
-      title: 'Total Earnings',
-      value: `₦${stats.totalEarnings.toLocaleString()}`,
-      icon: FaMoneyBillWave,
-      color: 'bg-purple-500',
-      link: '/doctor/earnings'
-    },
-    {
-      title: 'Pending Earnings',
-      value: `₦${stats.pendingEarnings.toLocaleString()}`,
-      icon: FaClock,
-      color: 'bg-orange-500',
-      link: '/doctor/earnings'
+  const toggleDay = (day) => {
+    setFormData(prev => ({
+      ...prev,
+      availableDays: prev.availableDays.includes(day)
+        ? prev.availableDays.filter(d => d !== day)
+        : [...prev.availableDays, day]
+    }));
+    if (errors.availableDays) {
+      setErrors(prev => ({ ...prev, availableDays: '' }));
     }
-  ];
+  };
 
-  const quickActions = [
-    { title: 'Start Video Call', icon: FaVideo, link: '/doctor/appointments', color: 'bg-red-100 text-red-600' },
-    { title: 'View Appointments', icon: FaCalendarAlt, link: '/doctor/appointments', color: 'bg-blue-100 text-blue-600' },
-    { title: 'Message Patients', icon: FaComments, link: '/doctor/chat', color: 'bg-green-100 text-green-600' },
-    { title: 'Write Prescription', icon: FaHeartbeat, link: '/doctor/appointments', color: 'bg-purple-100 text-purple-600' },
-    { title: 'Patient Health Monitor', icon: FaChartLine, link: '/doctor/patients', color: 'bg-yellow-100 text-yellow-600' }
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
-      </div>
-    );
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+    
+    setLoading(true);
+    
+    const result = await registerDoctor({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+      specialization: formData.specialization,
+      consultationFee: parseFloat(formData.consultationFee),
+      hospitalName: formData.hospitalName,
+      hospitalAddress: formData.hospitalAddress,
+      yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
+      qualifications: formData.qualifications,
+      availableDays: formData.availableDays,
+      availableTimeStart: formData.availableTimeStart,
+      availableTimeEnd: formData.availableTimeEnd,
+      maxAppointmentsPerDay: parseInt(formData.maxAppointmentsPerDay)
+    });
+    
+    if (result.success) {
+      navigate('/verify', { state: { email: formData.email, phone: formData.phone, role: 'doctor' } });
+    }
+    
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-linear-to-r from-secondary-600 to-secondary-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold">
-            Welcome, Dr. {user?.profile?.first_name}!
-          </h1>
-          <p className="mt-2 text-secondary-100">
-            Manage your patients, appointments, and track your earnings
+    <div className="min-h-screen bg-linear-to-br from-primary-50 to-secondary-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4">
+            <FaArrowLeft className="mr-2" />
+            Back to Home
+          </Link>
+          <div className="flex justify-center mb-4">
+            <div className="bg-primary-100 p-3 rounded-full">
+              <FaUserMd className="h-10 w-10 text-primary-600" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Join as a Doctor
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Help expecting mothers receive quality care and grow your practice
           </p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {statsCards.map((stat, index) => (
-            <Link key={index} to={stat.link} className="dashboard-stat-card hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between">
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+            {/* Personal Information Section */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-500 text-sm">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name *
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className={`input-field ${errors.firstName ? 'border-red-500' : ''}`}
+                    placeholder="Enter your first name"
+                  />
+                  {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
                 </div>
-                <div className={`${stat.color} p-3 rounded-full`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+                
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name *
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className={`input-field ${errors.lastName ? 'border-red-500' : ''}`}
+                    placeholder="Enter your last name"
+                  />
+                  {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
                 </div>
               </div>
-            </Link>
-          ))}
-        </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {quickActions.map((action, index) => (
-              <Link
-                key={index}
-                to={action.link}
-                className="bg-white rounded-lg p-4 text-center hover:shadow-md transition-shadow border border-gray-100"
-              >
-                <div className={`${action.color} p-3 rounded-full inline-flex mb-3`}>
-                  <action.icon className="h-6 w-6" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaEnvelope className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`input-field pl-10 ${errors.email ? 'border-red-500' : ''}`}
+                      placeholder="doctor@example.com"
+                    />
+                  </div>
+                  {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
                 </div>
-                <p className="text-sm font-medium text-gray-700">{action.title}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
+                
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number *
+                  </label>
+                  <PhoneInput
+                    country={'ng'}
+                    value={formData.phone}
+                    onChange={handlePhoneChange}
+                    inputClass={`w-full !pl-12 !py-2 !border ${errors.phone ? '!border-red-500' : '!border-gray-300'} !rounded-lg`}
+                    containerClass="w-full"
+                    buttonClass="!border !border-gray-300 !rounded-l-lg"
+                  />
+                  {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+                </div>
+              </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Earnings Chart */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Weekly Earnings</h2>
-              <select className="text-sm border rounded-lg px-3 py-1">
-                <option>This Week</option>
-                <option>Last Week</option>
-                <option>This Month</option>
-              </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaLock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`input-field pl-10 ${errors.password ? 'border-red-500' : ''}`}
+                      placeholder="••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+                </div>
+                
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaLock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={`input-field pl-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                      placeholder="••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>}
+                </div>
+              </div>
             </div>
-            {earningsData ? (
-              <Line
-                data={earningsData}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: function(context) {
-                          return `₦${context.parsed.y.toLocaleString()}`;
-                        }
-                      }
-                    }
-                  },
-                  scales: {
-                    y: {
-                      ticks: {
-                        callback: function(value) {
-                          return `₦${value.toLocaleString()}`;
-                        }
-                      }
-                    }
-                  }
-                }}
+
+            {/* Professional Information */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Professional Information</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 mb-1">
+                    Specialization *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaStethoscope className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="specialization"
+                      name="specialization"
+                      value={formData.specialization}
+                      onChange={handleChange}
+                      className={`input-field pl-10 ${errors.specialization ? 'border-red-500' : ''}`}
+                    >
+                      <option value="">Select Specialization</option>
+                      <option value="Obstetrician">Obstetrician</option>
+                      <option value="Maternal-Fetal Medicine">Maternal-Fetal Medicine</option>
+                      <option value="Perinatologist">Perinatologist</option>
+                      <option value="Midwife">Midwife</option>
+                      <option value="Family Medicine">Family Medicine</option>
+                      <option value="Nutritionist">Nutritionist</option>
+                    </select>
+                  </div>
+                  {errors.specialization && <p className="mt-1 text-xs text-red-600">{errors.specialization}</p>}
+                </div>
+                
+                <div>
+                  <label htmlFor="consultationFee" className="block text-sm font-medium text-gray-700 mb-1">
+                    Consultation Fee (₦) *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaMoneyBillWave className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="consultationFee"
+                      name="consultationFee"
+                      type="number"
+                      value={formData.consultationFee}
+                      onChange={handleChange}
+                      className={`input-field pl-10 ${errors.consultationFee ? 'border-red-500' : ''}`}
+                      placeholder="e.g., 15000"
+                    />
+                  </div>
+                  {errors.consultationFee && <p className="mt-1 text-xs text-red-600">{errors.consultationFee}</p>}
+                  <p className="mt-1 text-xs text-gray-500">Platform fee: 10% of consultation fee</p>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label htmlFor="qualifications" className="block text-sm font-medium text-gray-700 mb-1">
+                  Qualifications
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaGraduationCap className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="qualifications"
+                    name="qualifications"
+                    type="text"
+                    value={formData.qualifications}
+                    onChange={handleChange}
+                    className="input-field pl-10"
+                    placeholder="e.g., MD, FACOG, MRCOG"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-gray-700 mb-1">
+                    Years of Experience
+                  </label>
+                  <input
+                    id="yearsOfExperience"
+                    name="yearsOfExperience"
+                    type="number"
+                    value={formData.yearsOfExperience}
+                    onChange={handleChange}
+                    className="input-field"
+                    placeholder="e.g., 10"
+                    min="0"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="maxAppointmentsPerDay" className="block text-sm font-medium text-gray-700 mb-1">
+                    Max Appointments Per Day
+                  </label>
+                  <input
+                    id="maxAppointmentsPerDay"
+                    name="maxAppointmentsPerDay"
+                    type="number"
+                    value={formData.maxAppointmentsPerDay}
+                    onChange={handleChange}
+                    className="input-field"
+                    min="1"
+                    max="20"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Practice Location */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Practice Location</h3>
+              
+              <div>
+                <label htmlFor="hospitalName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Hospital/Clinic Name *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaHospital className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="hospitalName"
+                    name="hospitalName"
+                    type="text"
+                    value={formData.hospitalName}
+                    onChange={handleChange}
+                    className={`input-field pl-10 ${errors.hospitalName ? 'border-red-500' : ''}`}
+                    placeholder="Enter hospital name"
+                  />
+                </div>
+                {errors.hospitalName && <p className="mt-1 text-xs text-red-600">{errors.hospitalName}</p>}
+              </div>
+
+              <div className="mt-4">
+                <label htmlFor="hospitalAddress" className="block text-sm font-medium text-gray-700 mb-1">
+                  Hospital Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaMapMarkerAlt className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <textarea
+                    id="hospitalAddress"
+                    name="hospitalAddress"
+                    value={formData.hospitalAddress}
+                    onChange={handleChange}
+                    rows="2"
+                    className="input-field pl-10"
+                    placeholder="Enter full hospital address"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Availability */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Availability</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Available Days *
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {daysOfWeek.map(day => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => toggleDay(day)}
+                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        formData.availableDays.includes(day)
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {day.slice(0, 3)}
+                    </button>
+                  ))}
+                </div>
+                {errors.availableDays && <p className="mt-1 text-xs text-red-600">{errors.availableDays}</p>}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="availableTimeStart" className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Time
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaClock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="availableTimeStart"
+                      name="availableTimeStart"
+                      type="time"
+                      value={formData.availableTimeStart}
+                      onChange={handleChange}
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="availableTimeEnd" className="block text-sm font-medium text-gray-700 mb-1">
+                    End Time
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaClock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="availableTimeEnd"
+                      name="availableTimeEnd"
+                      type="time"
+                      value={formData.availableTimeEnd}
+                      onChange={handleChange}
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className="flex items-start">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
+                required
               />
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                <FaMoneyBillWave className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p>No earnings data available yet</p>
-              </div>
-            )}
-          </div>
-
-          {/* Today's Appointments */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Today's Schedule</h2>
-              <Link to="/doctor/appointments" className="text-sm text-secondary-600 hover:text-secondary-700">
-                View all
-              </Link>
-            </div>
-            {todayAppointments.length > 0 ? (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {todayAppointments.map((apt, index) => (
-                  <div key={index} className="border-b border-gray-100 pb-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {apt.patient_first_name} {apt.patient_last_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Time: {apt.start_time}
-                        </p>
-                      </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(apt.status)}`}>
-                        {apt.status}
-                      </span>
-                    </div>
-                    <div className="flex space-x-2 mt-2">
-                      {apt.status === 'confirmed' && (
-                        <>
-                          <button className="text-xs bg-primary-100 text-primary-700 px-3 py-1 rounded-lg hover:bg-primary-200">
-                            Start Call
-                          </button>
-                          <button className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200">
-                            Complete
-                          </button>
-                        </>
-                      )}
-                      {apt.type === 'video' && apt.status === 'confirmed' && (
-                        <Link 
-                          to={`/doctor/video-call/${apt.id}`}
-                          className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200"
-                        >
-                          Join Video
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FaCalendarAlt className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p>No appointments scheduled for today</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-          {/* Recent Patients */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Patients</h2>
-              <Link to="/doctor/patients" className="text-sm text-secondary-600 hover:text-secondary-700">
-                View all
-              </Link>
-            </div>
-            {recentPatients.length > 0 ? (
-              <div className="space-y-3">
-                {recentPatients.map((patient, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-primary-100 rounded-full w-10 h-10 flex items-center justify-center">
-                        <FaUsers className="text-primary-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {patient.first_name} {patient.last_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Last visit: {patient.last_visit || 'Not yet'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link 
-                        to={`/doctor/monitor/${patient.id}`}
-                        className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200"
-                      >
-                        Monitor
-                      </Link>
-                      <Link 
-                        to={`/doctor/chat/${patient.user_id}`}
-                        className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200"
-                      >
-                        Message
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FaUsers className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p>No patients yet</p>
-              </div>
-            )}
-          </div>
-
-          {/* Performance Metrics */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h2>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-600">Patient Satisfaction</span>
-                  <span className="text-sm font-medium text-gray-900">4.8/5.0</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '96%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-600">Appointment Completion Rate</span>
-                  <span className="text-sm font-medium text-gray-900">94%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '94%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-600">Response Time</span>
-                  <span className="text-sm font-medium text-gray-900">&lt; 2 min</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '90%' }}></div>
-                </div>
-              </div>
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
+                I agree to the{' '}
+                <Link to="/terms" className="text-primary-600 hover:text-primary-500">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy" className="text-primary-600 hover:text-primary-500">
+                  Privacy Policy
+                </Link>
+              </label>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="text-md font-semibold text-gray-900 mb-3">Upcoming Reminders</h3>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <FaClock className="text-yellow-500" />
-                  <span>Follow-up with patient Sarah Johnson in 30 mins</span>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary py-3 text-lg font-semibold"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                  Creating Account...
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <FaCheckCircle className="text-green-500" />
-                  <span>Prescription for Mary Williams ready for review</span>
-                </div>
-              </div>
+              ) : (
+                'Register as Doctor'
+              )}
+            </button>
+
+            {/* Login Link */}
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Already have a doctor account?{' '}
+                <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
+                  Sign in here
+                </Link>
+              </p>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   );
 };
 
-export default DoctorDashboard;
+export default DoctorRegister;
